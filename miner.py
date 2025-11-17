@@ -160,7 +160,6 @@ def calculate_final_scores(score_dict: dict,
     names = sampler_data["molecules"]
     smiles = sampler_data["smiles"]
 
-    # Calculate InChIKey for each molecule to deduplicate molecules after merging
     inchikey_list = []
     
     for s in smiles:

@@ -49,7 +49,6 @@ def iterative_sampling_loop(
       4) Write top x to file (overwrite) each iteration
     """
     n_samples = config["num_molecules"] * 5
-
     top_pool = pd.DataFrame(columns=["name", "smiles", "InChIKey", "score"])
     seen_inchikeys = set()
 
@@ -76,7 +75,6 @@ def iterative_sampling_loop(
         if not sampler_data:
             bt.logging.warning("[Miner] No valid molecules produced; continuing")
             continue
-
         try:
             names = sampler_data["molecules"]
             filtered_names = []

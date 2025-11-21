@@ -158,7 +158,6 @@ def iterative_sampling_loop(
     db_path: str,
     output_path: str,
     config: dict,
-    save_all_scores: bool = False
 ) -> None:
     target_models = []
     antitarget_models = []
@@ -309,7 +308,7 @@ def iterative_sampling_loop(
         }
 
         # Calculate final scores per molecule
-        batch_scores = calculate_final_scores(score_dict, sampler_data, config, save_all_scores)
+        batch_scores = calculate_final_scores(score_dict, sampler_data, config)
 
         try:
             seen_inchikeys.update([k for k in batch_scores["InChIKey"].tolist() if k])
@@ -351,9 +350,10 @@ def iterative_sampling_loop(
 def calculate_final_scores(score_dict: dict, 
         sampler_data: dict, 
         config: dict, 
-        save_all_scores: bool = False,
         current_epoch: int = 0) -> pd.DataFrame:
-
+    """
+    Calculate final scores per molecule
+    """
     names = sampler_data["molecules"]
     smiles = sampler_data["smiles"]
     inchikey_list = sampler_data.get("inchikeys")
@@ -404,9 +404,9 @@ def main(config: dict):
         db_path=DB_PATH,
         output_path=os.path.join(OUTPUT_DIR, "result.json"),
         config=config,
-        save_all_scores=True,
     )
  
+
 if __name__ == "__main__":
     config = get_config()
     main(config)

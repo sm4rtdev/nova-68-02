@@ -158,6 +158,7 @@ def iterative_sampling_loop(
     db_path: str,
     output_path: str,
     config: dict,
+    save_all_scores: bool = False
 ) -> None:
     target_models = []
     antitarget_models = []
@@ -308,7 +309,7 @@ def iterative_sampling_loop(
         }
 
         # Calculate final scores per molecule
-        batch_scores = calculate_final_scores(score_dict, sampler_data, config)
+        batch_scores = calculate_final_scores(score_dict, sampler_data, config, save_all_scores)
 
         try:
             seen_inchikeys.update([k for k in batch_scores["InChIKey"].tolist() if k])
@@ -350,10 +351,12 @@ def iterative_sampling_loop(
 def calculate_final_scores(score_dict: dict, 
         sampler_data: dict, 
         config: dict, 
+        save_all_scores: bool = False,
         current_epoch: int = 0) -> pd.DataFrame:
     """
     Calculate final scores per molecule
     """
+
     names = sampler_data["molecules"]
     smiles = sampler_data["smiles"]
     inchikey_list = sampler_data.get("inchikeys")
@@ -397,6 +400,16 @@ def calculate_final_scores(score_dict: dict,
         "score": final_scores
     })
 
+    if save_all_scores:
+        all_scores = {"scored_molecules": [(mol["name"], mol["score"]) for mol in batch_scores.to_dict(orient="records")]}
+        all_scores_path = os.path.join(OUTPUT_DIR, f"all_scores_{current_epoch}.json")
+        if os.path.exists(all_scores_path):
+            with open(all_scores_path, "r") as f:
+                all_previous_scores = json.load(f)
+            all_scores["scored_molecules"] = all_previous_scores["scored_molecules"] + all_scores["scored_molecules"]
+        with open(all_scores_path, "w") as f:
+            json.dump(all_scores, f, ensure_ascii=False, indent=2)
+
     return batch_scores
 
 def main(config: dict):
@@ -404,9 +417,9 @@ def main(config: dict):
         db_path=DB_PATH,
         output_path=os.path.join(OUTPUT_DIR, "result.json"),
         config=config,
+        save_all_scores=True,
     )
  
-
 if __name__ == "__main__":
     config = get_config()
     main(config)
